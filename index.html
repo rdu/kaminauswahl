@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Kaminauswahl</title>
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: ein Schritt pro Bildschirm – oben Zurück + Fortschritt, Mitte Inhalt, unten feste große Knöpfe */
+:root {
+  --bg: #F6F4F1;
+  --surface: #FFFFFF;
+  --fg: #1B1714;
+  --muted: #554C45;
+  --line: #D9D1C9;
+  --ember: #B03F0C;
+  --ember-fg: #FFFFFF;
+  --yes: #1D6638;
+  --yes-fg: #FFFFFF;
+  --no: #E7E1DB;
+  --no-fg: #1B1714;
+  --dot-off: #D3CAC1;
+  --font: "Atkinson Hyperlegible", "Verdana", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15110E; --surface: #211B17; --fg: #F6F0EA; --muted: #CBBFB4; --line: #3B332D;
+    --ember: #F28A4C; --ember-fg: #1A0F08; --yes: #4DB374; --yes-fg: #08170D;
+    --no: #352D27; --no-fg: #F6F0EA; --dot-off: #4A413A; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15110E; --surface: #211B17; --fg: #F6F0EA; --muted: #CBBFB4; --line: #3B332D;
+  --ember: #F28A4C; --ember-fg: #1A0F08; --yes: #4DB374; --yes-fg: #08170D;
+  --no: #352D27; --no-fg: #F6F0EA; --dot-off: #4A413A; color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font); font-size: 22px; line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--bg);
+}
+.wrap {
+  max-width: 640px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 calc(190px + env(safe-area-inset-bottom, 0px));
+}
+h1, h2 { text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: 36px; }
+h2 { font-size: 30px; }
+p { margin: 0; }
+
+/* Kopfzeile */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding-block: 12px; border-bottom: 2px solid var(--line); margin-bottom: 20px;
+}
+.back {
+  font: inherit; font-size: 22px; font-weight: 700; color: var(--fg);
+  background: var(--no); border: 0; border-radius: 14px;
+  min-height: 60px; padding: 0 20px; display: inline-flex; align-items: center; gap: 8px;
+}
+.back svg { width: 26px; height: 26px; }
+.progress { font-size: 20px; color: var(--muted); text-align: right; }
+.meter { height: 10px; border-radius: 5px; background: var(--dot-off); margin: -8px 0 20px; overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--ember); border-radius: 5px; }
+.progress b { color: var(--fg); }
+
+/* Kamin-Karte */
+.head { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.badge {
+  flex: none; width: 84px; height: 84px; border-radius: 50%;
+  background: var(--ember); color: var(--ember-fg);
+  display: grid; place-items: center; font-size: 46px; font-weight: 700;
+}
+.badge small { display: none; }
+.head-text { min-width: 0; }
+.kind { font-size: 20px; color: var(--muted); }
+.photo { display: block; width: 100%; height: auto; border-radius: 16px; background: var(--surface); }
+.photos { display: grid; gap: 12px; margin-bottom: 22px; }
+
+.facts { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 0;
+  background: var(--surface); border-radius: 16px; border: 2px solid var(--line); }
+.facts li { padding: 16px 18px; border-top: 2px solid var(--line); display: grid; gap: 6px; }
+.facts li:first-child { border-top: 0; }
+.facts .label { font-size: 19px; color: var(--muted); }
+.facts .value { font-size: 25px; font-weight: 700; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dots { display: inline-flex; gap: 6px; }
+.dots i { width: 20px; height: 20px; border-radius: 50%; background: var(--dot-off); display: block; }
+.dots i.on { background: var(--ember); }
+
+.notes { display: grid; gap: 14px; margin-bottom: 8px; }
+.note { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; }
+.note svg { width: 30px; height: 30px; margin-top: 2px; }
+.note.good svg { color: var(--yes); }
+.note.bad svg { color: var(--ember); }
+.note p { min-width: 0; }
+.section-title { font-size: 22px; font-weight: 700; margin: 6px 0 4px; }
+
+/* Untere Knopfleiste */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+  background: var(--bg); border-top: 2px solid var(--line);
+  padding-top: 14px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.bar-inner { max-width: 640px; margin: 0 auto; display: grid; gap: 12px; }
+.btn {
+  font: inherit; font-size: 25px; font-weight: 700; border: 0; border-radius: 16px;
+  min-height: 72px; padding: 10px 20px; width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 12px; text-align: center;
+}
+.btn svg { width: 30px; height: 30px; flex: none; }
+.btn-yes { background: var(--yes); color: var(--yes-fg); }
+.btn-no { background: var(--no); color: var(--no-fg); }
+.btn-main { background: var(--ember); color: var(--ember-fg); }
+.btn.is-picked { outline: 5px solid var(--fg); outline-offset: 3px; }
+.btn:focus-visible, .back:focus-visible, .pick:focus-visible { outline: 5px solid var(--ember); outline-offset: 3px; }
+
+/* Start / Liste / Ende */
+.intro { display: grid; gap: 22px; padding-top: 28px; }
+.intro .hero { width: 100%; height: auto; border-radius: 16px; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 52px 1fr; gap: 14px; align-items: start; counter-increment: s; }
+.steps li::before {
+  content: counter(s); width: 52px; height: 52px; border-radius: 50%;
+  background: var(--surface); border: 3px solid var(--ember); color: var(--fg);
+  display: grid; place-items: center; font-weight: 700; font-size: 26px;
+}
+.calm { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 18px; }
+
+.list { display: grid; gap: 16px; }
+.pick {
+  font: inherit; color: var(--fg); text-align: left; width: 100%;
+  background: var(--surface); border: 3px solid var(--line); border-radius: 18px;
+  padding: 14px; display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: center;
+}
+.pick img { width: 112px; height: 84px; object-fit: cover; border-radius: 10px; }
+.pick .pnum { font-size: 20px; color: var(--muted); }
+.pick .pname { font-size: 24px; font-weight: 700; line-height: 1.2; }
+.pick .pcta { grid-column: 1 / -1; background: var(--ember); color: var(--ember-fg);
+  border-radius: 12px; padding: 14px; text-align: center; font-weight: 700; font-size: 23px; }
+
+.final { text-align: center; display: grid; gap: 18px; padding-top: 24px; justify-items: center; }
+.final .big {
+  width: 220px; height: 220px; border-radius: 50%; background: var(--ember); color: var(--ember-fg);
+  display: grid; place-items: center; font-size: 140px; font-weight: 700; line-height: 1;
+}
+.final .say { font-size: 30px; font-weight: 700; }
+.final img { width: 100%; max-width: 420px; height: auto; border-radius: 16px; }
+.muted { color: var(--muted); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .screen { animation: in .25s ease-out; }
+  @keyframes in { from { opacity: .4; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+}
+</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app" aria-live="polite"></div>
+<div class="bar" id="bar"><div class="bar-inner" id="barInner"></div></div>
+
+<script>
+const ICON = {
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+  yes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+  no: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7.5v9M7.5 12h9"/></svg>',
+  minus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7.5 12h9"/></svg>',
+  next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>'
+};
+
+// flame: 1 eher modern · 2 ordentlich · 3 echt · 4 sehr echt   heat: 2 gut · 3 sehr gut
+const KAMINE = [
+ {
+  "name": "Glow Fire Curie",
+  "kind": "Kamin zum Hinstellen, mit Glas an drei Seiten",
+  "flame": 4,
+  "heat": 2,
+  "price": 1049,
+  "size": "1,14 m breit · 90 cm hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden – dafür braucht es Hilfe (einige Stunden).",
+  "good": [
+   "Die Käufer sagen: „Sieht sehr realistisch aus.“",
+   "Das Feuer sieht man auch von der Seite.",
+   "Flamme und Licht in vielen Farben, Kaminknistern zum Einschalten."
+  ],
+  "bad": [
+   "Der Aufbau ist aufwendig."
+  ],
+  "rating": [
+   5.0,
+   12
+  ],
+  "ordner": "elektro-standkamin/02-glow-fire-curie"
+ },
+ {
+  "name": "Dimplex Verdi",
+  "kind": "Großer, runder Standkamin mit Wasserdampf-Feuer",
+  "flame": 4,
+  "heat": 3,
+  "price": 1384,
+  "size": "78 cm breit · 1,43 m hoch",
+  "setup": "Hinstellen, Wasser einfüllen, Stecker rein. Kein Zusammenbauen, kein Bohren.",
+  "good": [
+   "Besonderes Feuer aus Wasserdampf – Käufer sagen „täuschend echt“.",
+   "Wärmt sehr gut.",
+   "Groß und stattlich, steht frei vor der Wand."
+  ],
+  "bad": [
+   "Die Flamme gibt es nur in Orange.",
+   "Man muss Wasser nachfüllen und den Tank etwa jede Woche ausspülen."
+  ],
+  "rating": [
+   4.9,
+   11
+  ],
+  "ordner": "elektro-wasserdampf/31-dimplex-verdi-optimyst"
+ },
+ {
+  "name": "Noble Flame Ferrara",
+  "kind": "Klassischer weißer Kamin zum Hinstellen",
+  "flame": 3,
+  "heat": 2,
+  "price": 799,
+  "size": "1,10 m breit · 95 cm hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden – dafür braucht es Hilfe.",
+  "good": [
+   "Klassische, edle Kaminform.",
+   "Kann über einen eingebauten Lautsprecher auch Musik spielen.",
+   "Flamme in mehreren Farben, Kaminknistern zum Einschalten."
+  ],
+  "bad": [
+   "Ein Käufer hört ein leises Brummen."
+  ],
+  "rating": [
+   5.0,
+   4
+  ],
+  "ordner": "elektro-standkamin/01-noble-flame-ferrara"
+ },
+ {
+  "name": "BALDERIA Leandros",
+  "kind": "Klassischer weißer Kamin mit Säulen zum Hinstellen",
+  "flame": 3,
+  "heat": 3,
+  "price": 569,
+  "size": "1,10 m breit · 95 cm hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden – laut Käuferinnen einfach, Hilfe ist trotzdem gut.",
+  "good": [
+   "Sieht aus wie ein echter alter Kamin.",
+   "Käufer sagen: Die Flammen sehen sehr natürlich aus.",
+   "Heizt kräftig."
+  ],
+  "bad": [
+   "Unklar, ob das Licht wirklich mehrere Farben hat.",
+   "Teurer, das Gebläse ist hörbar."
+  ],
+  "rating": [
+   4.8,
+   50
+  ],
+  "ordner": "elektro-standkamin/27-balderia-leandros"
+ },
+ {
+  "name": "KAMINIO Matti 38",
+  "kind": "Schlichter weißer Kamin mit breitem Sims zum Hinstellen",
+  "flame": 3,
+  "heat": 3,
+  "price": 289,
+  "size": "95 cm breit · 77 cm hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden – zu zweit geht es leichter.",
+  "good": [
+   "Käufer finden das Feuer täuschend echt.",
+   "Sehr gute Bewertungen und schneller Ersatzteil-Service.",
+   "Licht rundherum in 15 Farben."
+  ],
+  "bad": [
+   "Die Flamme selbst hat nur eine Farbe.",
+   "Eher niedrig."
+  ],
+  "rating": [
+   4.7,
+   225
+  ],
+  "ordner": "elektro-standkamin/22-kaminio-matti-38"
+ },
+ {
+  "name": "BALDERIA Finn",
+  "kind": "Klassischer weißer Kamin mit Sims zum Hinstellen",
+  "flame": 2,
+  "heat": 3,
+  "price": 249,
+  "size": "1,00 m breit · 82 cm hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden (ca. 1–2 Stunden) – dafür braucht es Hilfe.",
+  "good": [
+   "Sehr viele zufriedene Käufer.",
+   "Heizt kräftig und ist günstig.",
+   "Teile sind beschriftet, der Aufbau gelingt gut."
+  ],
+  "bad": [
+   "Die Flamme ist immer orange, nur das Licht drumherum wechselt die Farbe.",
+   "Das Gebläse ist hörbar, die Oberfläche zerkratzt leicht."
+  ],
+  "rating": [
+   4.6,
+   681
+  ],
+  "ordner": "elektro-standkamin/21-balderia-finn"
+ },
+ {
+  "name": "Juskys Eckkamin",
+  "kind": "Weißer Kamin für eine Zimmerecke",
+  "flame": 3,
+  "heat": 3,
+  "price": 270,
+  "size": "96 cm breit · 93 cm hoch",
+  "setup": "Wird in eine Ecke gestellt. Muss zusammengebaut werden – das schafft auch eine Person, Hilfe ist aber gut.",
+  "good": [
+   "Wirkt groß, braucht aber wenig Wand.",
+   "Ein Käufer lobt ein sehr realistisches Flammenbild.",
+   "Heizt kräftig."
+  ],
+  "bad": [
+   "Das Gebläse ist nicht leise, die Flamme wirkt manchen zu gelb.",
+   "Nur das Licht drumherum wechselt die Farbe."
+  ],
+  "rating": [
+   4.6,
+   187
+  ],
+  "ordner": "elektro-standkamin/23-juskys-eckkamin-51204"
+ },
+ {
+  "name": "YITAHOME 38-Zoll-Kaminkonsole",
+  "kind": "Kamin im Landhausstil mit Ablage zum Hinstellen",
+  "flame": 2,
+  "heat": 3,
+  "price": 260,
+  "size": "97 cm breit · 86 cm hoch",
+  "setup": "Wird hingestellt. Kommt in vielen Einzelteilen – dafür braucht es Hilfe.",
+  "good": [
+   "Sehr gute Sterne, gemütliche Landhaus-Optik.",
+   "Heizt kräftig.",
+   "Farbiges Licht in vielen Farben."
+  ],
+  "bad": [
+   "Mehrere Käufer finden ihn laut.",
+   "Der Aufbau ist aufwendig."
+  ],
+  "rating": [
+   4.8,
+   60
+  ],
+  "ordner": "elektro-standkamin/24-yitahome-38-zoll-standkamin"
+ },
+ {
+  "name": "Garlivo Napoli",
+  "kind": "Kamin mit Holzbalken oben, zum Hinstellen",
+  "flame": 2,
+  "heat": 2,
+  "price": 749,
+  "size": "1,12 m breit · 1,00 m hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden – dafür braucht es Hilfe.",
+  "good": [
+   "Gemütliche Form mit Holz.",
+   "Glas an drei Seiten.",
+   "Flamme in vielen Farben, Kaminknistern zum Einschalten."
+  ],
+  "bad": [
+   "Bisher kaum Erfahrungen von anderen Käufern."
+  ],
+  "rating": null,
+  "ordner": "elektro-standkamin/06-garlivo-napoli-36"
+ },
+ {
+  "name": "GF CORE Pandora",
+  "kind": "Moderner weißer Kamin mit schwarzem Balken zum Hinstellen",
+  "flame": 2,
+  "heat": 2,
+  "price": 549,
+  "size": "1,14 m breit · 97 cm hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden und ist schwer – dafür braucht es Hilfe.",
+  "good": [
+   "Die Flamme wechselt zwischen 3 Farben.",
+   "Knistergeräusch ist eingebaut.",
+   "Groß und stabil, deutscher Hersteller."
+  ],
+  "bad": [
+   "Heizt etwas schwächer als die anderen.",
+   "Wenige Bewertungen, Transportschäden wurden gemeldet."
+  ],
+  "rating": [
+   4.3,
+   39
+  ],
+  "ordner": "elektro-standkamin/26-gf-core-pandora"
+ },
+ {
+  "name": "Noble Flame Ohio",
+  "kind": "Breites Möbelstück mit Kamin – darauf passt ein Fernseher",
+  "flame": 3,
+  "heat": 2,
+  "price": 1295,
+  "size": "1,35 m breit · 79 cm hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden – dafür braucht es Hilfe.",
+  "good": [
+   "Kamin und Fernsehmöbel in einem.",
+   "Hat eine Auszeichnung für gutes Design bekommen.",
+   "Flamme in mehreren Farben, Kaminknistern zum Einschalten."
+  ],
+  "bad": [
+   "Beim Heizen hört man den Lüfter.",
+   "Der Aufbau ist nicht einfach."
+  ],
+  "rating": null,
+  "ordner": "elektro-standkamin/03-noble-flame-ohio"
+ },
+ {
+  "name": "GF Core Demeter",
+  "kind": "Breiter, flacher Kamin zum Hinstellen",
+  "flame": 1,
+  "heat": 3,
+  "price": 690,
+  "size": "1,36 m breit · 75 cm hoch",
+  "setup": "Wird hingestellt. Muss zusammengebaut werden – dafür braucht es Hilfe.",
+  "good": [
+   "Wärmt sehr gut.",
+   "Man kann einen Fernseher daraufstellen.",
+   "Flamme in vielen Farben."
+  ],
+  "bad": [
+   "Das Feuer wirkt eher modern, wie ein Lichtband – weniger wie Holzfeuer."
+  ],
+  "rating": null,
+  "ordner": "elektro-standkamin/05-gf-core-demeter-106"
+ },
+ {
+  "name": "Dimplex Stockbridge 2.0",
+  "kind": "Klassischer Kaminofen mit Türen und Wasserdampf-Feuer",
+  "flame": 3,
+  "heat": 3,
+  "price": 903,
+  "size": "62 cm breit · 66 cm hoch",
+  "setup": "Hinstellen, Wasser einfüllen, Stecker rein. Kein Zusammenbauen.",
+  "good": [
+   "Besonderes Feuer aus Wasserdampf, das wie Rauch und Flamme aussieht.",
+   "Sieht aus wie ein echter Holzofen, die Glastüren gehen auf.",
+   "Wärmt sehr gut."
+  ],
+  "bad": [
+   "Die Flamme gibt es nur in Orange.",
+   "Man muss Wasser nachfüllen. Noch keine Erfahrungen von Käufern."
+  ],
+  "rating": null,
+  "ordner": "elektro-wasserdampf/32-dimplex-stockbridge-2-optimyst"
+ },
+ {
+  "name": "Dimplex Mapleton 100",
+  "kind": "Hoher schwarzer Kaminofen aus Gusseisen mit Wasserdampf-Feuer",
+  "flame": 3,
+  "heat": 3,
+  "price": 1489,
+  "size": "46 cm breit · 97 cm hoch",
+  "setup": "Hinstellen (er ist schwer, das machen zwei Personen), Wasser einfüllen, Stecker rein.",
+  "good": [
+   "Besonderes Feuer aus Wasserdampf, von drei Seiten zu sehen.",
+   "Edler, schwerer Ofen mit Fach für Holz.",
+   "Wärmt sehr gut."
+  ],
+  "bad": [
+   "Die Flamme gibt es nur in Orange.",
+   "Man muss Wasser nachfüllen. Eher schmal und recht teuer."
+  ],
+  "rating": null,
+  "ordner": "elektro-wasserdampf/33-dimplex-mapleton-100-optimyst"
+ },
+ {
+  "name": "Noble Flame Campo",
+  "kind": "Schwarzer Kaminofen, schmal und hoch",
+  "flame": 3,
+  "heat": 2,
+  "price": 1345,
+  "size": "62 cm breit · 1,30 m hoch",
+  "setup": "Wird hingestellt. Kommt fertig zusammengebaut – nur auspacken.",
+  "good": [
+   "Sieht aus wie ein echter Kaminofen.",
+   "Glas an drei Seiten.",
+   "Kein Zusammenbauen nötig."
+  ],
+  "bad": [
+   "Ein Käufer findet die Flammen im hohen Ofen etwas niedrig.",
+   "Einer der teuersten Kamine in dieser Auswahl."
+  ],
+  "rating": [
+   5.0,
+   7
+  ],
+  "ordner": "elektro-standkamin/04-noble-flame-campo"
+ },
+ {
+  "name": "KESSER Panorama-Kaminofen",
+  "kind": "Schwarzer Ofen mit Fenstern an drei Seiten",
+  "flame": 3,
+  "heat": 3,
+  "price": 190,
+  "size": "44 cm breit · 75 cm hoch",
+  "setup": "Nur hinstellen und einstecken – fast nichts zusammenzubauen.",
+  "good": [
+   "Flamme und Glut lassen sich in vielen Farben einstellen.",
+   "Sieht von drei Seiten wie ein Holzofen aus.",
+   "Günstig und sofort nutzbar."
+  ],
+  "bad": [
+   "Die Fernbedienung ist bei manchen unzuverlässig, nach längerer Zeit kann der Flammenmotor klackern.",
+   "Eher schlank."
+  ],
+  "rating": [
+   4.2,
+   365
+  ],
+  "ordner": "elektro-standkamin/25-kesser-panorama-kaminofen"
+ },
+ {
+  "name": "Noble Flame Apollo",
+  "kind": "Kamin zum Aufhängen an die Wand, mit Wasserdampf-Feuer",
+  "flame": 3,
+  "heat": 3,
+  "price": 813,
+  "size": "87 cm breit · 73 cm hoch",
+  "setup": "Wird an die Wand geschraubt. Dafür muss jemand bohren. Dann Wasser einfüllen.",
+  "good": [
+   "Besonderes Feuer aus Wasserdampf.",
+   "Braucht keinen Platz auf dem Boden.",
+   "Wärmt sehr gut."
+  ],
+  "bad": [
+   "Die Flamme gibt es nur in Orange.",
+   "Man muss Wasser nachfüllen. Er ist schwer (31 kg)."
+  ],
+  "rating": null,
+  "ordner": "elektro-wasserdampf/34-noble-flame-apollo-optimyst"
+ },
+ {
+  "name": "Noble Flame Evoke",
+  "kind": "Kamin zum Aufhängen an die Wand",
+  "flame": 3,
+  "heat": 2,
+  "price": 740,
+  "size": "1,22 m breit · 51 cm hoch · nur 12 cm tief",
+  "setup": "Wird an die Wand gehängt. Dafür muss jemand bohren.",
+  "good": [
+   "Braucht keinen Platz auf dem Boden.",
+   "Leuchtet auf Wunsch die Wand dahinter farbig an.",
+   "Flamme in mehreren Farben, Kaminknistern zum Einschalten."
+  ],
+  "bad": [
+   "Die Flamme wirkt etwas flacher als bei den großen Kaminen."
+  ],
+  "rating": null,
+  "ordner": "elektro-wandkamin/03-noble-flame-evoke-1220"
+ }
+];
+KAMINE.forEach((k, i) => { k.nr = i + 1; k.imgA = `img/k${i+1}a.jpg`; k.imgB = `img/k${i+1}b.jpg`; });
+
+const FLAME = ["", "Eher modern", "Ordentlich", "Wirkt echt", "Wirkt sehr echt"];
+const HEAT = ["", "Mittel", "Gut", "Sehr gut"];
+const N = KAMINE.length;
+const STORE = "kaminauswahl-v3";
+
+let S = { view: "start", i: 0, likes: {}, choice: null };
+try { const s = JSON.parse(localStorage.getItem(STORE) || "null"); if (s && typeof s === "object") S = Object.assign(S, s); } catch (e) {}
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} };
+
+const app = document.getElementById("app");
+const bar = document.getElementById("barInner");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const euro = n => n.toLocaleString("de-DE") + " Euro";
+const priceWord = n => n < 400 ? "Günstig" : n < 900 ? "Mittlerer Preis" : "Höherer Preis";
+const stars = r => !r ? "Noch keine Bewertungen von Käufern gefunden"
+  : `${r[0].toLocaleString("de-DE", { minimumFractionDigits: 1 })} von 5 Sternen`;
+const starsNote = r => !r ? "" : r[1] >= 20 ? `${r[1].toLocaleString("de-DE")} Käufer haben ihn bewertet`
+  : `Aber erst ${r[1]} ${r[1] === 1 ? "Käufer hat" : "Käufer haben"} ihn bewertet`;
+const dots = (v, max) => '<span class="dots" aria-hidden="true">' + Array.from({ length: max }, (_, j) => `<i class="${j < v ? "on" : ""}"></i>`).join("") + "</span>";
+
+function go(view, i) {
+  S.view = view; if (i !== undefined) S.i = i; save(); render();
+  window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+}
+
+function topBar(label, onBack) {
+  return `<div class="top"><button class="back" id="backBtn" type="button">${ICON.back} Zurück</button><div class="progress">${label}</div></div>`;
+}
+
+function render() {
+  if (S.view === "kamin") return renderKamin();
+  if (S.view === "liste") return renderListe();
+  if (S.view === "pruefen") return renderPruefen();
+  if (S.view === "fertig") return renderFertig();
+  renderStart();
+}
+
+function renderStart() {
+  app.innerHTML = `<div class="screen intro">
+    <h1>Dein neuer Kamin</h1>
+    <img class="hero" src="${KAMINE[0].imgA}" alt="Ein Elektrokamin mit Flammen" width="900" height="900">
+    <p>Hier siehst du <b>${N} Kamine</b>. Alle werden einfach in die Steckdose gesteckt, alle machen schöne Flammen und alle wärmen. Nimm dir Zeit – du kannst jederzeit aufhören und später weitermachen.</p>
+    <ol class="steps">
+      <li><p>Du siehst immer <b>einen Kamin</b>. Schau ihn dir in Ruhe an.</p></li>
+      <li><p>Dann drückst du unten auf <b>„Gefällt mir“</b> oder <b>„Gefällt mir nicht“</b>.</p></li>
+      <li><p>Am Ende suchst du dir <b>einen</b> aus. Dann bekommst du eine <b>Nummer</b>. Mehr musst du dir nicht merken.</p></li>
+    </ol>
+    <p class="calm">Du kannst nichts falsch machen. Mit dem Knopf <b>„Zurück“</b> oben links kommst du immer einen Schritt zurück.</p>
+  </div>`;
+  const started = Object.keys(S.likes).length > 0;
+  bar.innerHTML = started
+    ? `<button class="btn btn-main" id="go" type="button">Weiter anschauen ${ICON.next}</button>
+       <button class="btn btn-no" id="restart" type="button">Ganz von vorne beginnen</button>`
+    : `<button class="btn btn-main" id="go" type="button">Los geht's ${ICON.next}</button>`;
+  document.getElementById("go").onclick = () => {
+    const firstOpen = KAMINE.findIndex(k => !(k.nr in S.likes));
+    if (started && firstOpen === -1) go("liste"); else go("kamin", started ? firstOpen : 0);
+  };
+  const r = document.getElementById("restart");
+  if (r) r.onclick = () => { S.likes = {}; S.choice = null; go("kamin", 0); };
+}
+
+function renderKamin() {
+  const k = KAMINE[S.i];
+  const answer = S.likes[k.nr];
+  app.innerHTML = `${topBar(`Kamin <b>${k.nr}</b> von ${N}`)}
+  <div class="meter" aria-hidden="true"><span style="width:${Math.round(k.nr / N * 100)}%"></span></div>
+  <div class="screen">
+    <div class="head">
+      <div class="badge" aria-label="Nummer ${k.nr}">${k.nr}</div>
+      <div class="head-text"><h2>Kamin Nummer ${k.nr}</h2><p class="kind">${esc(k.kind)}</p></div>
+    </div>
+    <div class="photos">
+      <img class="photo" src="${k.imgA}" alt="Foto von Kamin Nummer ${k.nr}" width="900" height="600">
+    </div>
+    <ul class="facts">
+      <li><span class="label">So echt sieht das Feuer aus</span><span class="value">${dots(k.flame, 4)} ${FLAME[k.flame]}</span></li>
+      <li><span class="label">So gut wärmt er</span><span class="value">${dots(k.heat, 3)} ${HEAT[k.heat]}</span></li>
+      <li><span class="label">Das sagen andere Käufer</span><span class="value">${stars(k.rating)}</span>${starsNote(k.rating) ? `<span class="muted">${starsNote(k.rating)}</span>` : ""}</li>
+      <li><span class="label">Preis</span><span class="value">${euro(k.price)}</span><span class="muted">${priceWord(k.price)}</span></li>
+      <li><span class="label">Größe</span><span class="value">${esc(k.size)}</span></li>
+      <li><span class="label">Aufstellen</span><span>${esc(k.setup)}</span></li>
+    </ul>
+    <p class="section-title">Das ist schön</p>
+    <div class="notes">${k.good.map(t => `<div class="note good">${ICON.plus}<p>${esc(t)}</p></div>`).join("")}</div>
+    <p class="section-title" style="margin-top:14px">Das solltest du wissen</p>
+    <div class="notes">${k.bad.map(t => `<div class="note bad">${ICON.minus}<p>${esc(t)}</p></div>`).join("")}</div>
+    <div class="photos" style="margin-top:22px">
+      <img class="photo" src="${k.imgB}" alt="Weiteres Foto von Kamin Nummer ${k.nr}" width="900" height="600" loading="lazy">
+    </div>
+  </div>`;
+  bar.innerHTML = `<button class="btn btn-yes${answer === true ? " is-picked" : ""}" id="yes" type="button">${ICON.yes} Gefällt mir</button>
+    <button class="btn btn-no${answer === false ? " is-picked" : ""}" id="no" type="button">${ICON.no} Gefällt mir nicht</button>`;
+  const next = () => S.i + 1 < N ? go("kamin", S.i + 1) : go("liste");
+  document.getElementById("yes").onclick = () => { S.likes[k.nr] = true; next(); };
+  document.getElementById("no").onclick = () => { S.likes[k.nr] = false; next(); };
+  document.getElementById("backBtn").onclick = () => S.i > 0 ? go("kamin", S.i - 1) : go("start");
+  const img = new Image(); if (S.i + 1 < N) img.src = KAMINE[S.i + 1].imgA;
+}
+
+function renderListe() {
+  const liked = KAMINE.filter(k => S.likes[k.nr] === true);
+  const shown = liked.length ? liked : KAMINE;
+  const intro = liked.length === 1
+    ? "Dieser Kamin hat dir gefallen:"
+    : liked.length ? `Diese ${liked.length} Kamine haben dir gefallen. Welchen möchtest du haben?`
+    : "Kein Kamin hat dir gefallen. Das ist nicht schlimm. Hier sind noch einmal alle. Vielleicht gefällt dir einer doch.";
+  app.innerHTML = `${topBar("Aussuchen")}
+  <div class="screen" style="display:grid;gap:18px">
+    <h2>Fast geschafft!</h2>
+    <p>${intro}</p>
+    <p class="muted">Tippe auf den Kamin, den du haben möchtest.</p>
+    <div class="list">${shown.map(k => `
+      <button class="pick" type="button" data-nr="${k.nr}">
+        <img src="${k.imgA}" alt="" width="112" height="84">
+        <span><span class="pnum">Nummer ${k.nr}</span><br><span class="pname">${esc(k.kind)}</span><br><span class="muted">${euro(k.price)}</span></span>
+        <span class="pcta">Nummer ${k.nr} nehme ich</span>
+      </button>`).join("")}</div>
+  </div>`;
+  bar.innerHTML = `<button class="btn btn-no" id="again" type="button">Alle noch einmal ansehen</button>`;
+  document.getElementById("again").onclick = () => go("kamin", 0);
+  document.getElementById("backBtn").onclick = () => go("kamin", N - 1);
+  app.querySelectorAll(".pick").forEach(b => b.onclick = () => { S.choice = +b.dataset.nr; go("pruefen"); });
+}
+
+function renderPruefen() {
+  const k = KAMINE[S.choice - 1];
+  app.innerHTML = `${topBar("Prüfen")}
+  <div class="screen final">
+    <h2>Ist das dein Kamin?</h2>
+    <img src="${k.imgA}" alt="Kamin Nummer ${k.nr}" width="900" height="600">
+    <div class="big" aria-hidden="true">${k.nr}</div>
+    <p class="say">Kamin Nummer ${k.nr}</p>
+    <p class="muted">${esc(k.kind)}</p>
+  </div>`;
+  bar.innerHTML = `<button class="btn btn-yes" id="ok" type="button">${ICON.yes} Ja, den möchte ich</button>
+    <button class="btn btn-no" id="nok" type="button">Nein, noch einmal aussuchen</button>`;
+  document.getElementById("ok").onclick = () => go("fertig");
+  document.getElementById("nok").onclick = () => { S.choice = null; go("liste"); };
+  document.getElementById("backBtn").onclick = () => go("liste");
+}
+
+function renderFertig() {
+  const k = KAMINE[S.choice - 1];
+  app.innerHTML = `${topBar("Fertig")}
+  <div class="screen final">
+    <h2>Fertig! Du hast gewählt.</h2>
+    <p>Sag einfach:</p>
+    <div class="big" aria-hidden="true">${k.nr}</div>
+    <p class="say">„Ich möchte Nummer ${k.nr}.“</p>
+    <img src="${k.imgA}" alt="Dein Kamin, Nummer ${k.nr}" width="900" height="600">
+    <p class="muted">Du kannst diese Seite jetzt schließen. Wenn du sie wieder öffnest, steht hier wieder deine Nummer.</p>
+  </div>`;
+  bar.innerHTML = `<button class="btn btn-no" id="change" type="button">Ich möchte doch einen anderen</button>`;
+  document.getElementById("change").onclick = () => { S.choice = null; go("liste"); };
+  document.getElementById("backBtn").onclick = () => go("pruefen");
+}
+
+if (S.view === "kamin" && !(S.i >= 0 && S.i < N)) S.view = "start";
+if ((S.view === "pruefen" || S.view === "fertig") && !KAMINE[S.choice - 1]) S.view = "liste";
+render();
+</script>
+
+</body>
+</html>
